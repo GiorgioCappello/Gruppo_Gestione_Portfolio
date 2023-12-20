@@ -23,15 +23,15 @@ if nargin < 2
 end
 
 %% Set up the Import Options and import the data
-opts = delimitedTextImportOptions("NumVariables", 5);
+opts = delimitedTextImportOptions("NumVariables", 6);
 
 % Specify range and delimiter
 opts.DataLines = dataLines;
 opts.Delimiter = ",";
 
 % Specify column names and types
-opts.VariableNames = ["VarName1", "Instrument", "Date", "MonthTotalReturn", "CompanyMarketCap"];
-opts.VariableTypes = ["double", "categorical", "string", "double", "double"];
+opts.VariableNames = ["VarName1", "Instrument", "Date", "MonthTotalReturn", "CompanyMarketCap", "Prices"];
+opts.VariableTypes = ["double", "categorical", "string", "double", "double", "double"];
 
 % Specify file level properties
 opts.ExtraColumnsRule = "ignore";
