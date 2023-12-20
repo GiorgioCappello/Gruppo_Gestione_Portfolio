@@ -52,7 +52,9 @@ mu = mean(returns)';
 
 k = 0.3;
 
+% Calcolo matrice varianza-covarianza
 sigma = cov(returns);
+% standard_dev
 vola = sqrt(diag(sigma));
 
 correlations = corr(returns);
@@ -71,17 +73,60 @@ mu_exp = sum(returns.*(exp(-lambda*(T-t)))')'/sum(exp(-lambda*(T-t)));
 
 % % Commento sulle correlazioni
 % disp('Matrice di correlazione tra le azioni:');
-% disp(sigma);
+% disp(correlations);
 % 
 % % Commento sulla matrice di varianza-covarianza storica e sulla matrice shrinkage
 % disp('Matrice di varianza-covarianza storica:');
-% disp(historical_covariance);
+% disp(sigma);
 % 
 % disp('Matrice di varianza-covarianza con shrinkage toward Constant Correlation Approach:');
-% disp(shrinkage_covariance);
+% disp(sigma_SCC);
 
 
 %% PUNTO 3
+
+% Definizioni variabili
+rf = 0.02/12;
+
+% Calcolo Markovitz con no risk asset
+A = (ones(number_stock,1)')*(sigma_SCC\mu_exp);
+B = mu_exp'*(sigma_SCC\mu_exp);
+C = ones(number_stock,1)'*(sigma_SCC\ones(number_stock,1));
+H = B - 2*A*rf + C*rf^2;
+
+% PROVA
+D=B*C-A^2;
+
+g=(B*(sigma_SCC\ones(number_stock,1))-A*(sigma_SCC\mu_exp))/D;
+h=(C*(sigma_SCC\mu_exp)-A*(sigma_SCC\ones(number_stock,1)))/D;
+
+w_min = sigma_SCC\ones(number_stock,1)/C;
+
+sum(w_min)
+
+m1=linspace(A/C,3,100);
+
+
+Var_w=@(m)C/D*(m-A/C).^2+1/C;
+
+% Calcolo portafoglio tangente
+w_tang = (sigma_SCC\(mu_exp-rf*ones(number_stock,1))/(ones(number_stock,1)'*(sigma_SCC\(mu_exp-rf*ones(number_stock,1)))));
+
+r_tang = w_tang'*mu_exp;
+var_tang = w_tang'*sigma_SCC*w_tang;
+
+% Calcolo frontiera efficiente
+m = linspace(rf,3,100);
+
+var_w = @(x) (x - rf).^2 / H;
+
+% Plot
+figure
+hold on
+plot(sqrt(var_w(m)), m)
+plot(sqrt(Var_w(m1)),m1)
+scatter(sqrt(var_tang), r_tang)
+
 %% PUNTO 4
 %% PUNTO 5
 %% PUNTO 6
