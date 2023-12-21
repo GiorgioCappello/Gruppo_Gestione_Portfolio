@@ -10,6 +10,7 @@ stock_data_APTV = read_stock("APTV.N.csv");
 stock_data_ITW = read_stock("ITW.N.csv");
 stock_data_PFE = read_stock("PFE.N.csv");
 stock_data_SPG = read_stock("SPG.N.csv");
+stock_data_SPX = read_stock("SPX.csv");
 
 %% Creazione meta dati
 
@@ -25,6 +26,9 @@ returns = [...
     table2array(stock_data_SPG(:, 4)) 
 ];
 
+market_prices = [...
+    table2array(stock_data_SPX(:, 4))];
+
 capitalization = [...
     table2array(stock_data_ADI(:,5)), ...
     table2array(stock_data_AMZN(:,5)), ...
@@ -32,6 +36,15 @@ capitalization = [...
     table2array(stock_data_ITW(:,5)), ...
     table2array(stock_data_PFE(:,5)), ...
     table2array(stock_data_SPG(:,5))
+];
+
+prices = [...
+    table2array(stock_data_ADI(:,6)), ...
+    table2array(stock_data_AMZN(:,6)), ...
+    table2array(stock_data_APTV(:,6)), ...
+    table2array(stock_data_ITW(:,6)), ...
+    table2array(stock_data_PFE(:,6)), ...
+    table2array(stock_data_SPG(:,6))
 ];
 
 %% Gestione valori Nan
@@ -42,6 +55,8 @@ capitalization = [...
 % Utilizziamo la funzione rmmissing che elimina le righe che presentano almeno un NaN
 
 returns = rmmissing(returns);
+prices = rmmissing(prices);
+market_prices  = rmmissing(market_prices);
 capitalization = rmmissing(capitalization);
 
 %% PUNTO 2
@@ -126,10 +141,41 @@ hold on
 plot(sqrt(var_w(m)), m)
 plot(sqrt(Var_w(m1)),m1)
 scatter(sqrt(var_tang), r_tang)
+hold off
 
 %% PUNTO 4
+
+
 %% PUNTO 5
+
+% riduco i market returns per accoppiare le dimensioni
+market_prices=market_prices(95:239);
+market_returns=price2ret(market_prices); % SI VEDA DOCUMENTATION DEL TOOLBOX ECONOMETRICS
+
+for i=1:length(stock_names)
+    logreturns(:,i)=price2ret(prices(:,i));
+end
+% Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
+for i=1:length(stock_names)
+    lm=fitlm(market_returns-0.02,logreturns(:,i)-0.02);
+    lm.Coefficients
+end
+
+
 %% PUNTO 6
+
+% calcolo la total market capitalization
+total_market_cap=sum(sum(capitalization));
+
+% e i pesi del portafoglio di mercato
+w_market=zeros(6,1);
+for i=1:length(stock_names);
+    w_market(i)=sum(capitalization(:,i))/total_market_cap;
+end
+
+% e gli implicit market excess returns (PI)
+PI = sigma_SCC*w_market; % CHI SIGMA USARE??
+
 %% PUNTO 7
 %% PUNTO 8
 %% PUNTO 9
