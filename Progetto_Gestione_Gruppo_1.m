@@ -307,3 +307,50 @@ end
 PI = sigma_SCC*w_market; % CHI SIGMA USARE??
 
 %% PUNTO 7
+
+% calcolo dei rendimenti attesi a Gennaio con metodo Monte Carlo 'trained'
+% sulla serie storica dei rendimenti
+jan_returns=zeros(6,1);
+simul_jan_returns=zeros(1000,6);
+mean_hist = mean(logreturns)';
+standev_hist = std(logreturns)';
+max_hist = max(logreturns);
+min_hist = min(logreturns);
+for j=1:length(stock_names)
+    for i=1:1000
+        simul_jan_returns(i,j) = mean_hist(j) + standev_hist(j)*((max_hist(j)-min_hist(j))*rand + min_hist(j));
+    end
+    jan_returns(j)=mean(simul_jan_returns(:,j));
+end
+
+% calcolo E[r] e il portafoglio con una prima view determinata tramite il
+% metodo Monte Carlo sovrastante, scegliendo il primo e quarto titolo con
+% una certainty DA INSERIRE
+
+Q=[jan_returns(1);jan_returns(4)];
+Certainty=[0.25,0.25]; % DA MODIFICARE
+P=[1, 0, 0, 0, 0, 0;
+    0, 0, 0, 1, 0, 0]; % DA VERIFICARE 
+
+Omega=zeros(size(P,1),size(P,1));
+for i=1:size(P,1)
+    Omega(i,i)=P(i,:)*sigma_SCC*P(i,:)'*((1-Certainty(i))*1/Certainty(i));
+end
+PI_new= inv(inv(sigma_SCC)+P'*inv(Omega)*P)*(inv(sigma_SCC)*PI+P'*inv(Omega)*Q);
+sigma_new=inv(inv(sigma_SCC)+P'*inv(Omega)*P);
+w_new=(sigma_new\PI_new)/sum(sigma_new\PI_new)
+
+% VIEW QUALITATIVA, MODIFICARE Q P E CERTEZZA
+
+Q=[jan_returns(1);jan_returns(4)]; % DA MODIFICARE
+Certainty=[0.25,0.25]; % DA MODIFICARE
+P=[1, 0, 0, 0, 0, 0;
+    0, 0, 0, 1, 0, 0]; % DA VERIFICARE 
+
+Omega=zeros(size(P,1),size(P,1));
+for i=1:size(P,1)
+    Omega(i,i)=P(i,:)*sigma_SCC*P(i,:)'*((1-Certainty(i))*1/Certainty(i));
+end
+PI_new= inv(inv(sigma_SCC)+P'*inv(Omega)*P)*(inv(sigma_SCC)*PI+P'*inv(Omega)*Q);
+sigma_new=inv(inv(sigma_SCC)+P'*inv(Omega)*P);
+w_new=(sigma_new\PI_new)/sum(sigma_new\PI_new)
