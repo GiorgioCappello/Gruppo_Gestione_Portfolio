@@ -86,16 +86,16 @@ T = size(returns,1);
 t = 1:T;
 mu_exp = sum(returns.*(exp(-lambda*(T-t)))')'/sum(exp(-lambda*(T-t)));
 
-% % Commento sulle correlazioni
-% disp('Matrice di correlazione tra le azioni:');
-% disp(correlations);
-% 
-% % Commento sulla matrice di varianza-covarianza storica e sulla matrice shrinkage
-% disp('Matrice di varianza-covarianza storica:');
-% disp(sigma);
-% 
-% disp('Matrice di varianza-covarianza con shrinkage toward Constant Correlation Approach:');
-% disp(sigma_SCC);
+% Commento sulle correlazioni
+disp('Matrice di correlazione tra le azioni:');
+disp(correlations);
+
+% Commento sulla matrice di varianza-covarianza storica e sulla matrice shrinkage
+disp('Matrice di varianza-covarianza storica:');
+disp(sigma);
+
+disp('Matrice di varianza-covarianza con shrinkage toward Constant Correlation Approach:');
+disp(sigma_SCC);
 
 
 %% PUNTO 3
@@ -131,137 +131,70 @@ w_tang = (sigma_SCC\(mu_exp-rf*ones(number_stock,1))/(ones(number_stock,1)'*(sig
 r_tang = w_tang'*mu_exp;
 var_tang = w_tang'*sigma_SCC*w_tang;
 
-% % Plot
-% figure
-% hold on
-% grid on
-% plot(sqrt(var_rf(m)), m)
-% plot(sqrt(var_no_rf(m1)),m1)
-% scatter(sqrt(var_tang), r_tang)
-% hold off
+% Plot
+figure
+hold on
+grid on
+plot(sqrt(var_rf(m)), m)
+plot(sqrt(var_no_rf(m1)),m1)
+scatter(sqrt(var_tang), r_tang)
+hold off
 
 %% PUNTO 4
 
-% % Punto a: plot delle tre frontiere
-% x0 = w_min;
-% %m2 = linspace(0.0048, 0.0053, 100);
-% m2 = linspace(rf,1,100);
-% 
-% % Vincolo 1
-% Aeq1 = [(mu_exp - rf)'; 1 1 0 0 0 0];
-% 
-% % Ciclo per trovare la frontiera
-% var_vincolo1_rf = zeros(length(m2), 1);
-% 
-% for i = 1:length(m2)
-%     beq1 = [m2(i) - rf; 0.5];
-%     w_1 = (m2(i) - rf) / H * (sigma_SCC \ (mu_exp - rf));
-%     ww_1 = fmincon(@(ww) ww' * sigma_SCC * ww, x0, [], [], Aeq1, beq1);
-%     var_vincolo1_rf(i) = ww_1' * sigma_SCC * ww_1;
-% end
-% 
-% % Vincolo 2 
-% Aeq2 = (mu_exp - rf)';
-% A2 = -eye(number_stock);
-% b2 = -0.1 * ones(number_stock, 1);
-% 
-% % Ciclo per trovare la frontiera
-% var_vincolo2_rf = zeros(length(m2), 1);
-% 
-% for i = 1:length(m2)
-%     beq2 = m2(i) - rf;
-%     w_2 = (m2(i) - rf) / H * (sigma_SCC \ (mu_exp - rf));
-%     ww_2 = fmincon(@(ww) ww' * sigma_SCC * ww, x0, A2, b2, Aeq2, beq2);
-%     var_vincolo2_rf(i) = ww_2' * sigma_SCC * ww_2;
-% end
-% 
-% % Punto b: calcolo dei portafogli con rendimento atteso del 0.5%
-% target_return = 0.005;
-% 
-% % No Vincolo
-% Aeq_no = (mu_exp - rf)';
-% beq_no = target_return - rf;
-% w_no_target_return = fmincon(@(w) w' * sigma_SCC * w, x0, [], [], Aeq_no, beq_no);
-% 
-% % Vincolo 1
-% beq1 = [target_return - rf; 0.5];
-% w_vincolo1_target_return = fmincon(@(ww) ww' * sigma_SCC * ww, x0, [], [], Aeq1, beq1);
-% 
-% % Vincolo 2
-% beq2 = target_return - rf;
-% w_vincolo2_target_return = fmincon(@(w) w' * sigma_SCC * w, x0, A2, b2, Aeq2, beq2);
-% 
-% % Calcolo delle varianze dei portafogli ottenuti
-% var_no_target_return = w_no_target_return' * sigma_SCC * w_no_target_return;
-% var_vincolo1_target_return = w_vincolo1_target_return' * sigma_SCC * w_vincolo1_target_return;
-% var_vincolo2_target_return = w_vincolo2_target_return' * sigma_SCC * w_vincolo2_target_return;
-% 
-% % Plot dei risultati
-% figure
-% hold on
-% grid on
-% plot(sqrt(var_rf(m2)), m2)
-% scatter(sqrt(var_no_target_return), target_return, 'b', 'filled')
-% plot(sqrt(var_vincolo1_rf), m2)
-% scatter(sqrt(var_vincolo1_target_return), target_return, 'r', 'filled')
-% plot(sqrt(var_vincolo2_rf), m2)
-% scatter(sqrt(var_vincolo2_target_return), target_return, 'g', 'filled')
-% legend("Frontiera no vincoli", "target no vincoli", "Frontiera vincolo 1", "target vincolo 1", "Frontiera vincolo 2", "target vincolo 2")
-% hold off
-
 % Punto a: plot delle tre frontiere
+
 x0 = w_min;
 m2 = linspace(rf,1,100);
 
 % Vincolo 1
-Aeq1 = [(mu_exp-rf)';1 1 0 0 0 0];
+Aeq1 = [(mu_exp - rf)'; 1 1 0 0 0 0];
 
 % Ciclo per trovare la frontiera
-var_vincolo1_rf = zeros(length(m2),1);
+var_vincolo1_rf = zeros(length(m2), 1);
 
 for i = 1:length(m2)
-    beq1 = [m2(i)-rf; 0.5];
-    w_1 = (m2(i)-rf)/H*(sigma_SCC\(mu_exp-rf));
-    ww_1 = fmincon(@(ww) ww'*sigma_SCC*ww, x0,[],[], Aeq1, beq1);
-    var_vincolo1_rf(i) = ww_1'*sigma_SCC*ww_1;
+    beq1 = [m2(i) - rf; 0.5];
+    w_1 = (m2(i) - rf) / H * (sigma_SCC \ (mu_exp - rf));
+    ww_1 = fmincon(@(ww) ww' * sigma_SCC * ww, x0, [], [], Aeq1, beq1);
+    var_vincolo1_rf(i) = ww_1' * sigma_SCC * ww_1;
 end
 
-% Vincolo 2
-Aeq2 = (mu_exp-rf)';
-A2 = - eye(number_stock);
-b2 = - 0.1 * ones(number_stock,1);
+% Vincolo 2 
+Aeq2 = (mu_exp - rf)';
+A2 = -eye(number_stock);
+b2 = -0.1 * ones(number_stock, 1);
 
 % Ciclo per trovare la frontiera
-var_vincolo2_rf = zeros(length(m2),1);
+var_vincolo2_rf = zeros(length(m2), 1);
 
 for i = 1:length(m2)
-    beq2 = m2(i)-rf;
-    w_2 = (m2(i)-rf)/H*(sigma_SCC\(mu_exp-rf));
-    ww_2 = fmincon(@(ww) ww'*sigma_SCC*ww, x0,A2,b2, Aeq2, beq2);
-    var_vincolo2_rf(i) = ww_2'*sigma_SCC*ww_2;
+    beq2 = m2(i) - rf;
+    w_2 = (m2(i) - rf) / H * (sigma_SCC \ (mu_exp - rf));
+    ww_2 = fmincon(@(ww) ww' * sigma_SCC * ww, x0, A2, b2, Aeq2, beq2);
+    var_vincolo2_rf(i) = ww_2' * sigma_SCC * ww_2;
 end
 
 % Punto b: calcolo dei portafogli con rendimento atteso del 0.5%
 target_return = 0.005;
 
-
 % No Vincolo
-Aeq_no = (mu_exp-rf)';
-beq_no = target_return-rf;
-w_no_target_return = fmincon(@(w) w'*sigma_SCC*w, x0, [], [], Aeq_no, beq_no);
+Aeq_no = (mu_exp - rf)';
+beq_no = target_return - rf;
+w_no_target_return = fmincon(@(w) w' * sigma_SCC * w, x0, [], [], Aeq_no, beq_no);
 
 % Vincolo 1
-beq1 = [target_return-rf;0.5];
-w_vincolo1_target_return = fmincon(@(ww) ww'*sigma_SCC*ww, x0,[],[], Aeq1, beq1);
+beq1 = [target_return - rf; 0.5];
+w_vincolo1_target_return = fmincon(@(ww) ww' * sigma_SCC * ww, x0, [], [], Aeq1, beq1);
 
 % Vincolo 2
-beq2 = target_return-rf;
-w_vincolo2_target_return = fmincon(@(w) w'*sigma_SCC*w, x0, A2, b2, Aeq2, beq2);
+beq2 = target_return - rf;
+w_vincolo2_target_return = fmincon(@(w) w' * sigma_SCC * w, x0, A2, b2, Aeq2, beq2);
 
 % Calcolo delle varianze dei portafogli ottenuti
-var_no_target_return = w_no_target_return'*sigma_SCC*w_no_target_return;
-var_vincolo1_target_return = w_vincolo1_target_return'*sigma_SCC*w_vincolo1_target_return;
-var_vincolo2_target_return = w_vincolo2_target_return'*sigma_SCC*w_vincolo2_target_return;
+var_no_target_return = w_no_target_return' * sigma_SCC * w_no_target_return;
+var_vincolo1_target_return = w_vincolo1_target_return' * sigma_SCC * w_vincolo1_target_return;
+var_vincolo2_target_return = w_vincolo2_target_return' * sigma_SCC * w_vincolo2_target_return;
 
 % Plot dei risultati
 figure
@@ -273,23 +206,23 @@ plot(sqrt(var_vincolo1_rf), m2)
 scatter(sqrt(var_vincolo1_target_return), target_return, 'r', 'filled')
 plot(sqrt(var_vincolo2_rf), m2)
 scatter(sqrt(var_vincolo2_target_return), target_return, 'g', 'filled')
-legend("Frontiera no vincoli","target no vincoli","Frontiera vincolo 1","target vincolo 1","Frontiera vincolo 2","target vincolo 2")
+legend("Frontiera no vincoli", "target no vincoli", "Frontiera vincolo 1", "target vincolo 1", "Frontiera vincolo 2", "target vincolo 2")
 hold off
 
 %% PUNTO 5
 
-% % riduco i market returns per accoppiare le dimensioni
-% market_prices=market_prices(95:239);
-% market_returns=price2ret(market_prices); % SI VEDA DOCUMENTATION DEL TOOLBOX ECONOMETRICS
-% 
-% for i=1:length(stock_names)
-%     logreturns(:,i)=price2ret(prices(:,i));
-% end
-% % Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
-% for i=1:length(stock_names)
-%     lm=fitlm(market_returns-0.02,logreturns(:,i)-0.02);
-%     lm.Coefficients
-% end
+% riduco i market returns per accoppiare le dimensioni
+market_prices=market_prices(95:239);
+market_returns=price2ret(market_prices); % SI VEDA DOCUMENTATION DEL TOOLBOX ECONOMETRICS
+
+for i=1:length(stock_names)
+    logreturns(:,i)=price2ret(prices(:,i));
+end
+% Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
+for i=1:length(stock_names)
+    lm=fitlm(market_returns-0.02,logreturns(:,i)-0.02);
+    lm.Coefficients
+end
 
 
 %% PUNTO 6
@@ -304,7 +237,7 @@ for i=1:length(stock_names)
 end
 
 % e gli implicit market excess returns (PI)
-PI = sigma_SCC*w_market; % CHI SIGMA USARE??
+PI = sigma_SCC*w_market;
 
 %% PUNTO 7
 
@@ -327,30 +260,32 @@ end
 % metodo Monte Carlo sovrastante, scegliendo il primo e quarto titolo con
 % una certainty DA INSERIRE
 
-Q=[jan_returns(1);jan_returns(4)];
-Certainty=[0.25,0.25]; % DA MODIFICARE
-P=[1, 0, 0, 0, 0, 0;
-    0, 0, 0, 1, 0, 0]; % DA VERIFICARE 
+% VIEW 1
 
-Omega=zeros(size(P,1),size(P,1));
-for i=1:size(P,1)
-    Omega(i,i)=P(i,:)*sigma_SCC*P(i,:)'*((1-Certainty(i))*1/Certainty(i));
+% Amazon batterà Simon Property Group della media dei valori stimati con montecarlo
+Q1 = (jan_returns(2)-jan_returns(6)) / 2;
+Certainty1 = 0.50; 
+P1=[0, 1, 0, 0, 0, -1];
+
+Omega=zeros(size(P1,1),size(P1,1));
+for i=1:size(P1,1)
+    Omega(i,i)=P1(i,:)*sigma_SCC*P1(i,:)'*((1-Certainty1(i))*1/Certainty1(i));
 end
-PI_new= inv(inv(sigma_SCC)+P'*inv(Omega)*P)*(inv(sigma_SCC)*PI+P'*inv(Omega)*Q);
-sigma_new=inv(inv(sigma_SCC)+P'*inv(Omega)*P);
-w_new=(sigma_new\PI_new)/sum(sigma_new\PI_new)
+PI_new1 = inv(inv(sigma_SCC)+P1'*inv(Omega)*P1)*(inv(sigma_SCC)*PI+P1'*inv(Omega)*Q1);
+sigma_new1 = inv(inv(sigma_SCC)+P1'*inv(Omega)*P1);
+w_new1 = (sigma_new1\PI_new1)/sum(sigma_new1\PI_new1)
 
-% VIEW QUALITATIVA, MODIFICARE Q P E CERTEZZA
+% VIEW 2
 
-Q=[jan_returns(1);jan_returns(4)]; % DA MODIFICARE
-Certainty=[0.25,0.25]; % DA MODIFICARE
-P=[1, 0, 0, 0, 0, 0;
-    0, 0, 0, 1, 0, 0]; % DA VERIFICARE 
-
-Omega=zeros(size(P,1),size(P,1));
-for i=1:size(P,1)
-    Omega(i,i)=P(i,:)*sigma_SCC*P(i,:)'*((1-Certainty(i))*1/Certainty(i));
+% Pfizer scende seguendo il momentum e seguendo l'analisi del CAPM (alpha negativo (-0.0096213) significativo al 5%)
+Q2 = [0.1]; % DA MODIFICARE
+Certainty2 = [0.25]; 
+P2 = [0, 0, 0, 0, -1, 0];
+    
+Omega=zeros(size(P2,1),size(P2,1));
+for i=1:size(P2,1)
+    Omega(i,i)=P2(i,:)*sigma_SCC*P2(i,:)'*((1-Certainty2(i))*1/Certainty2(i));
 end
-PI_new= inv(inv(sigma_SCC)+P'*inv(Omega)*P)*(inv(sigma_SCC)*PI+P'*inv(Omega)*Q);
-sigma_new=inv(inv(sigma_SCC)+P'*inv(Omega)*P);
-w_new=(sigma_new\PI_new)/sum(sigma_new\PI_new)
+PI_new2 = inv(inv(sigma_SCC)+P2'*inv(Omega)*P2)*(inv(sigma_SCC)*PI+P2'*inv(Omega)*Q2);
+sigma_new2 = inv(inv(sigma_SCC)+P2'*inv(Omega)*P2);
+w_new2 = (sigma_new2\PI_new2)/sum(sigma_new2\PI_new2)
