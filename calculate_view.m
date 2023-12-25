@@ -1,4 +1,4 @@
-function [PI_new, sigma_new, w_new] = calculateView(sigma_SCC, PI, P, Q, Certainty)
+function [PI_new, sigma_new, w_new] = calculate_view(sigma_SCC, PI, P, Q, Certainty)
     % Calcolo di Omega
     Omega = P * sigma_SCC * P' * ((1 - Certainty) / Certainty);
     
