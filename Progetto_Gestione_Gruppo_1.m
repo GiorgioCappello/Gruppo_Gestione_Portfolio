@@ -135,9 +135,18 @@ var_tang = w_tang'*sigma_SCC*w_tang;
 figure
 hold on
 grid on
-plot(sqrt(var_rf(m)), m)
-plot(sqrt(var_no_rf(m1)),m1)
-scatter(sqrt(var_tang), r_tang)
+plot(sqrt(var_rf(m)), m, 'LineWidth', 2, 'DisplayName', 'Con Risk-Free Asset')
+scatter(0, rf, 50, 'blue', 'filled','DisplayName', 'Risk-Free ')
+plot(sqrt(var_no_rf(m1)), m1, 'LineWidth', 2, 'DisplayName', 'Senza Risk-Free Asset', 'Color', 'red')
+scatter(sqrt(var_no_rf(A/C)), A/C , 50, 'red', 'filled','DisplayName', 'A/C')
+scatter(sqrt(var_tang), r_tang, 50, [150, 50, 200]/255, 'filled', 'DisplayName', 'Portafoglio Tangente')
+xlabel('Deviazione Standard')
+ylabel('Rendimento Atteso')
+title('Frontiere e Portafoglio Tangente')
+text(0.02, rf, ' rf ', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right', 'Color', 'blue');
+text(sqrt(var_no_rf(A/C)), A/C, ' A/C', 'VerticalAlignment', 'top', 'HorizontalAlignment', 'right', 'Color', 'red');
+text(sqrt(var_tang), r_tang, '    Portafoglio Tangente', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'Color', [150, 50, 200]/255);
+legend('Location', 'Best')
 hold off
 
 %% PUNTO 4
@@ -196,17 +205,20 @@ var_no_target_return = w_no_target_return' * sigma_SCC * w_no_target_return;
 var_vincolo1_target_return = w_vincolo1_target_return' * sigma_SCC * w_vincolo1_target_return;
 var_vincolo2_target_return = w_vincolo2_target_return' * sigma_SCC * w_vincolo2_target_return;
 
-% Plot dei risultati
+%% Plot dei risultati
 figure
 hold on
 grid on
-plot(sqrt(var_rf(m2)), m2)
-scatter(sqrt(var_no_target_return), target_return, 'b', 'filled')
-plot(sqrt(var_vincolo1_rf), m2)
-scatter(sqrt(var_vincolo1_target_return), target_return, 'r', 'filled')
-plot(sqrt(var_vincolo2_rf), m2)
-scatter(sqrt(var_vincolo2_target_return), target_return, 'g', 'filled')
-legend("Frontiera no vincoli", "target no vincoli", "Frontiera vincolo 1", "target vincolo 1", "Frontiera vincolo 2", "target vincolo 2")
+plot(sqrt(var_rf(m2)), m2, 'b', 'LineWidth', 2, 'DisplayName', 'Frontiera no vincoli')
+scatter(sqrt(var_no_target_return), target_return, 100, 'b', 'filled', 'DisplayName', 'Target no vincoli')
+plot(sqrt(var_vincolo1_rf), m2, 'r', 'LineWidth', 2, 'DisplayName', 'Frontiera vincolo 1')
+scatter(sqrt(var_vincolo1_target_return), target_return, 100, 'r', 'filled', 'DisplayName', 'Target vincolo 1')
+plot(sqrt(var_vincolo2_rf), m2, 'g', 'LineWidth', 2, 'DisplayName', 'Frontiera vincolo 2')
+scatter(sqrt(var_vincolo2_target_return), target_return, 100, 'g', 'filled', 'DisplayName', 'Target vincolo 2')
+text(sqrt(var_no_target_return), target_return, ' No Vincoli', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right', 'Color', 'b');
+text(sqrt(var_vincolo1_target_return), target_return, ' Vincolo 1', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right', 'Color', 'r');
+text(sqrt(var_vincolo2_target_return), target_return, ' Vincolo 2', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right', 'Color', 'g');
+legend('Location', 'Best')
 hold off
 
 %% PUNTO 5
@@ -214,6 +226,7 @@ hold off
 % riduco i market returns per accoppiare le dimensioni
 market_prices=market_prices(95:239);
 market_returns=price2ret(market_prices); % SI VEDA DOCUMENTATION DEL TOOLBOX ECONOMETRICS
+logreturns = zeros(length(market_returns),length(stock_names));
 
 for i=1:length(stock_names)
     logreturns(:,i)=price2ret(prices(:,i));
@@ -267,25 +280,13 @@ Q1 = (jan_returns(2)-jan_returns(6)) / 2;
 Certainty1 = 0.50; 
 P1=[0, 1, 0, 0, 0, -1];
 
-Omega=zeros(size(P1,1),size(P1,1));
-for i=1:size(P1,1)
-    Omega(i,i)=P1(i,:)*sigma_SCC*P1(i,:)'*((1-Certainty1(i))*1/Certainty1(i));
-end
-PI_new1 = inv(inv(sigma_SCC)+P1'*inv(Omega)*P1)*(inv(sigma_SCC)*PI+P1'*inv(Omega)*Q1);
-sigma_new1 = inv(inv(sigma_SCC)+P1'*inv(Omega)*P1);
-w_new1 = (sigma_new1\PI_new1)/sum(sigma_new1\PI_new1)
+[PI_new1, sigma_new1, w_new1] = calculateView(sigma_SCC, PI, P1, Q1, Certainty1);
 
 % VIEW 2
 
 % Pfizer scende seguendo il momentum e seguendo l'analisi del CAPM (alpha negativo (-0.0096213) significativo al 5%)
-Q2 = [0.1]; % DA MODIFICARE
-Certainty2 = [0.25]; 
-P2 = [0, 0, 0, 0, -1, 0];
+Q2 = 0.01; % DA MODIFICARE
+Certainty2 = 0.4; 
+P2 = [0, 0, 0, 0, 1, 0];
     
-Omega=zeros(size(P2,1),size(P2,1));
-for i=1:size(P2,1)
-    Omega(i,i)=P2(i,:)*sigma_SCC*P2(i,:)'*((1-Certainty2(i))*1/Certainty2(i));
-end
-PI_new2 = inv(inv(sigma_SCC)+P2'*inv(Omega)*P2)*(inv(sigma_SCC)*PI+P2'*inv(Omega)*Q2);
-sigma_new2 = inv(inv(sigma_SCC)+P2'*inv(Omega)*P2);
-w_new2 = (sigma_new2\PI_new2)/sum(sigma_new2\PI_new2)
+[PI_new2, sigma_new2, w_new2] = calculateView(sigma_SCC, PI, P2, Q2, Certainty2);
