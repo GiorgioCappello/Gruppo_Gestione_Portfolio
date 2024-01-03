@@ -231,12 +231,23 @@ logreturns = zeros(length(market_returns),length(stock_names));
 for i=1:length(stock_names)
     logreturns(:,i)=price2ret(prices(:,i));
 end
-% Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
-for i=1:length(stock_names)
-    lm=fitlm(market_returns-0.02,logreturns(:,i)-0.02);
-    lm.Coefficients
-end
 
+% Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
+alpha=zeros(6,1);
+beta=zeros(6,1);
+pi_alpha=zeros(6,1);
+pi_beta=zeros(6,1);
+pi_test=ones(6,1);
+for i=1:length(stock_names)
+    lm = fitlm(market_returns-0.02,logreturns(:,i)-0.02); 
+    LM = table2array(lm.Coefficients);
+    alpha(i)=LM(1,1);
+    beta(i)=LM(1,2);
+    pi_alpha(i)=LM(1,4);
+    pi_beta(i)=LM(2,4);
+    pi_test(i)=coefTest(lm);
+end
+LM_table = array2table([alpha,pi_alpha,beta,pi_beta,pi_test],'VariableNames',{'Alpha','pvalue di Alpha','Beta','pvalue di Beta','pvalue del modello'},'RowNames',stock_names);
 
 %% PUNTO 6
 
