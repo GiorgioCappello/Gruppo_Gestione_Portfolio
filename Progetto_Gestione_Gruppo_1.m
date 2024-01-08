@@ -222,3 +222,38 @@ text(sqrt(var_vincolo1_target_return), target_return, ' Vincolo 1', 'VerticalAli
 text(sqrt(var_vincolo2_target_return), target_return, ' Vincolo 2', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right', 'Color', 'g');
 legend('Location', 'Best')
 hold off
+
+%% PUNTO 5
+
+returns_CAPM=returns*100;
+
+% riduco i market prices per accoppiare le dimensioni;
+market_prices=market_prices(95:239);
+
+% calcolo i market returns;
+market_returns = zeros(1,length(market_prices));
+for i=2:length(market_prices)
+    market_returns(i) = (market_prices(i)-market_prices(i-1))./(market_prices(i-1));
+end
+
+
+% Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
+market_returns_CAPM=market_returns(2:145)*100;
+returns_LM=returns_CAPM(2:145,:);
+alpha=zeros(6,1);
+beta=zeros(6,1);
+pi_alpha=zeros(6,1);
+pi_beta=zeros(6,1);
+pi_test=ones(6,1);
+for i=1:length(stock_names)
+    lm = fitlm(market_returns_CAPM-rf,returns_LM(:,i)-rf); 
+    LM = table2array(lm.Coefficients);
+    alpha(i)=LM(1,1);
+    beta(i)=LM(1,2);
+    pi_alpha(i)=LM(1,4);
+    pi_beta(i)=LM(2,4);
+    pi_test(i)=coefTest(lm);
+end
+
+% riporto in tabella per pulizia grafica
+LM_table = array2table([alpha,pi_alpha,beta,pi_beta,pi_test],'VariableNames',{'Alpha','pvalue di Alpha','Beta','pvalue di Beta','pvalue del modello'},'RowNames',stock_names);
