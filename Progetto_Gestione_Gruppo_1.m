@@ -59,6 +59,8 @@ prices = rmmissing(prices);
 market_prices  = rmmissing(market_prices);
 capitalization = rmmissing(capitalization);
 
+returns = returns./100;
+
 %% PUNTO 2
 
 mu = mean(returns)';
@@ -109,7 +111,7 @@ B = mu_exp'*(sigma_SCC\mu_exp);
 C = ones(number_stock,1)'*(sigma_SCC\ones(number_stock,1));
 H = B - 2*A*rf + C*rf^2;
 
-m = linspace(rf,3,100);
+m = linspace(rf,0.05,100);
 
 var_rf = @(x) (x - rf).^2 / H;
 
@@ -121,7 +123,7 @@ h=(C*(sigma_SCC\mu_exp)-A*(sigma_SCC\ones(number_stock,1)))/D;
 
 w_min = sigma_SCC\ones(number_stock,1)/C;
 
-m1=linspace(A/C,3,100);
+m1=linspace(A/C,0.05,100);
 
 var_no_rf=@(m)C/D*(m-A/C).^2+1/C;
 
@@ -154,7 +156,7 @@ hold off
 % Punto a: plot delle tre frontiere
 
 x0 = w_min;
-m2 = linspace(rf,1,100);
+m2 = linspace(rf,0.01,100);
 
 % Vincolo 1
 Aeq1 = [(mu_exp - rf)'; 1 1 0 0 0 0];
@@ -169,10 +171,10 @@ for i = 1:length(m2)
     var_vincolo1_rf(i) = ww_1' * sigma_SCC * ww_1;
 end
 
-% Vincolo 2 
+% Vincolo 2
 Aeq2 = (mu_exp - rf)';
-A2 = -eye(number_stock);
-b2 = -0.1 * ones(number_stock, 1);
+A2 = - eye(number_stock);
+b2 = - 0.1 * ones(number_stock, 1);
 
 % Ciclo per trovare la frontiera
 var_vincolo2_rf = zeros(length(m2), 1);
@@ -220,84 +222,3 @@ text(sqrt(var_vincolo1_target_return), target_return, ' Vincolo 1', 'VerticalAli
 text(sqrt(var_vincolo2_target_return), target_return, ' Vincolo 2', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right', 'Color', 'g');
 legend('Location', 'Best')
 hold off
-
-%% PUNTO 5
-
-% riduco i market returns per accoppiare le dimensioni
-market_prices=market_prices(95:239);
-market_returns=price2ret(market_prices); % SI VEDA DOCUMENTATION DEL TOOLBOX ECONOMETRICS
-logreturns = zeros(length(market_returns),length(stock_names));
-
-for i=1:length(stock_names)
-    logreturns(:,i)=price2ret(prices(:,i));
-end
-
-% Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
-alpha=zeros(6,1);
-beta=zeros(6,1);
-pi_alpha=zeros(6,1);
-pi_beta=zeros(6,1);
-pi_test=ones(6,1);
-for i=1:length(stock_names)
-    lm = fitlm(market_returns-0.02,logreturns(:,i)-0.02); 
-    LM = table2array(lm.Coefficients);
-    alpha(i)=LM(1,1);
-    beta(i)=LM(1,2);
-    pi_alpha(i)=LM(1,4);
-    pi_beta(i)=LM(2,4);
-    pi_test(i)=coefTest(lm);
-end
-LM_table = array2table([alpha,pi_alpha,beta,pi_beta,pi_test],'VariableNames',{'Alpha','pvalue di Alpha','Beta','pvalue di Beta','pvalue del modello'},'RowNames',stock_names);
-
-%% PUNTO 6
-
-% calcolo la total market capitalization
-total_market_cap=sum(sum(capitalization));
-
-% e i pesi del portafoglio di mercato
-w_market=zeros(6,1);
-for i=1:length(stock_names)
-    w_market(i)=sum(capitalization(:,i))/total_market_cap;
-end
-
-% e gli implicit market excess returns (PI)
-PI = sigma_SCC*w_market;
-
-%% PUNTO 7
-
-% calcolo dei rendimenti attesi a Gennaio con metodo Monte Carlo 'trained'
-% sulla serie storica dei rendimenti
-jan_returns=zeros(6,1);
-simul_jan_returns=zeros(1000,6);
-mean_hist = mean(logreturns)';
-standev_hist = std(logreturns)';
-max_hist = max(logreturns);
-min_hist = min(logreturns);
-for j=1:length(stock_names)
-    for i=1:1000
-        simul_jan_returns(i,j) = mean_hist(j) + standev_hist(j)*((max_hist(j)-min_hist(j))*rand + min_hist(j));
-    end
-    jan_returns(j)=mean(simul_jan_returns(:,j));
-end
-
-% calcolo E[r] e il portafoglio con una prima view determinata tramite il
-% metodo Monte Carlo sovrastante, scegliendo il primo e quarto titolo con
-% una certainty DA INSERIRE
-
-% VIEW 1
-
-% Amazon batterà Simon Property Group della media dei valori stimati con montecarlo
-Q1 = (jan_returns(2)-jan_returns(6)) / 2;
-Certainty1 = 0.50; 
-P1=[0, 1, 0, 0, 0, -1];
-
-[PI_new1, sigma_new1, w_new1] = calculateView(sigma_SCC, PI, P1, Q1, Certainty1);
-
-% VIEW 2
-
-% Pfizer scende seguendo il momentum e seguendo l'analisi del CAPM (alpha negativo (-0.0096213) significativo al 5%)
-Q2 = 0.01; % DA MODIFICARE
-Certainty2 = 0.4; 
-P2 = [0, 0, 0, 0, 1, 0];
-    
-[PI_new2, sigma_new2, w_new2] = calculateView(sigma_SCC, PI, P2, Q2, Certainty2);
