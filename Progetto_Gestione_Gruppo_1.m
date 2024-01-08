@@ -302,11 +302,17 @@ P1=[0, 1, 0, 0, 0, -1];
 
 [PI_new1, sigma_new1, w_new1] = calculateView(sigma_SCC, PI, P1, Q1, Certainty1);
 
+vola_new1 = sqrt(w_new1'*sigma_SCC*w_new1);
+r_new1 = w_new1'*mu_exp;
+
 % VIEW 2
 
-% Pfizer sale seguendo il momentum e seguendo l'analisi del CAPM (alpha negativo (-0.1390))
+% Pfizer sale seguendo il momentum e le news disponibili al 24 dicembre
 Q2 = 0.01; 
 Certainty2 = 0.40; 
 P2 = [0, 0, 0, 0, 1, 0];
     
 [PI_new2, sigma_new2, w_new2] = calculateView(sigma_SCC, PI, P2, Q2, Certainty2);
+
+vola_new2 = sqrt(w_new2'*sigma_SCC*w_new2);
+r_new2 = w_new2'*mu_exp;
