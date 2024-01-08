@@ -225,10 +225,8 @@ hold off
 
 %% PUNTO 5
 
-returns_CAPM=returns*100;
-
 % riduco i market prices per accoppiare le dimensioni;
-market_prices=market_prices(95:239);
+market_prices = market_prices(95:239);
 
 % calcolo i market returns;
 market_returns = zeros(1,length(market_prices));
@@ -236,17 +234,19 @@ for i=2:length(market_prices)
     market_returns(i) = (market_prices(i)-market_prices(i-1))./(market_prices(i-1));
 end
 
+% riduzione dimensione per adattamento lm
+returns_CAPM = returns(2:145,:)*100;
+market_returns_CAPM=market_returns(2:145)*100;
+rf_CAPM = rf*100;
 
 % Computo beta e alpha per ciascuno stock procedendo in ordine alfabetico
-market_returns_CAPM=market_returns(2:145)*100;
-returns_LM=returns_CAPM(2:145,:);
 alpha=zeros(6,1);
 beta=zeros(6,1);
 pi_alpha=zeros(6,1);
 pi_beta=zeros(6,1);
 pi_test=ones(6,1);
 for i=1:length(stock_names)
-    lm = fitlm(market_returns_CAPM-rf*100,returns_LM(:,i)-rf*100); 
+    lm = fitlm(market_returns_CAPM-rf_CAPM,returns_CAPM(:,i)-rf_CAPM); 
     LM = table2array(lm.Coefficients);
     alpha(i)=LM(1,1);
     beta(i)=LM(1,2);
