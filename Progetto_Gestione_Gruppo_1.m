@@ -271,3 +271,42 @@ end
 
 % e gli implicit market excess returns (PI)
 PI = sigma_SCC*w_market;
+
+%% PUNTO 7
+
+% calcolo dei rendimenti attesi a Gennaio con metodo Monte Carlo 'trained'
+% sulla serie storica dei rendimenti percentuali
+jan_returns=zeros(6,1);
+simul_jan_returns=zeros(1000,6);
+mean_hist = mean(returns)';
+standev_hist = std(returns)';
+max_hist = max(returns);
+min_hist = min(returns);
+for j=1:length(stock_names)
+    for i=1:1000
+        simul_jan_returns(i,j) = mean_hist(j) + standev_hist(j)*((max_hist(j)-min_hist(j))*rand + min_hist(j));
+    end
+    jan_returns(j)=mean(simul_jan_returns(:,j));
+end
+
+% calcolo E[r] e il portafoglio con una prima view determinata tramite il
+% metodo Monte Carlo sovrastante, scegliendo il primo e quarto titolo con
+% una certainty 
+
+% VIEW 1
+
+% Amazon batterà Simon Property Group della media dei valori stimati con montecarlo
+Q1 = (jan_returns(2)-jan_returns(6)) / 2;
+Certainty1 = 0.3; 
+P1=[0, 1, 0, 0, 0, -1];
+
+[PI_new1, sigma_new1, w_new1] = calculateView(sigma_SCC, PI, P1, Q1, Certainty1);
+
+% VIEW 2
+
+% Pfizer sale seguendo il momentum e seguendo l'analisi del CAPM (alpha negativo (-0.1390))
+Q2 = 0.01; 
+Certainty2 = 0.40; 
+P2 = [0, 0, 0, 0, 1, 0];
+    
+[PI_new2, sigma_new2, w_new2] = calculateView(sigma_SCC, PI, P2, Q2, Certainty2);
