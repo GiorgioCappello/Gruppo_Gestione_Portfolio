@@ -257,3 +257,17 @@ end
 
 % riporto in tabella per pulizia grafica
 LM_table = array2table([alpha,pi_alpha,beta,pi_beta,pi_test],'VariableNames',{'Alpha','pvalue di Alpha','Beta','pvalue di Beta','pvalue del modello'},'RowNames',stock_names);
+
+%% PUNTO 6 
+
+% calcolo la total market capitalization
+total_market_cap=sum(sum(capitalization));
+
+% e i pesi del portafoglio di mercato
+w_market=zeros(6,1);
+for i=1:length(stock_names)
+    w_market(i)=sum(capitalization(:,i))/total_market_cap;
+end
+
+% e gli implicit market excess returns (PI)
+PI = sigma_SCC*w_market;
