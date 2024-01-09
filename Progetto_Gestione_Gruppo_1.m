@@ -298,21 +298,32 @@ end
 % Amazon batterà Simon Property Group della media dei valori stimati con montecarlo
 Q1 = (jan_returns(2)-jan_returns(6)) / 2;
 Certainty1 = 0.3; 
-P1=[0, 1, 0, 0, 0, -1];
+P1 = [0, 1, 0, 0, 0, -1];
 
 [PI_new1, sigma_new1, w_new1] = calculateView(sigma_SCC, PI, P1, Q1, Certainty1);
 
-vola_new1 = sqrt(w_new1'*sigma_SCC*w_new1);
-r_new1 = w_new1'*mu_exp;
+vola_new1 = sqrt(w_new1'*sigma_new1*w_new1);
+r_new1 = w_new1'*PI_new1;
 
 % VIEW 2
 
-% Pfizer sale seguendo il momentum e le news disponibili al 24 dicembre
+% Pfizer sale seguendo il momentum e le news disponibili al 23 dicembre
 Q2 = 0.01; 
 Certainty2 = 0.40; 
 P2 = [0, 0, 0, 0, 1, 0];
-    
+
 [PI_new2, sigma_new2, w_new2] = calculateView(sigma_SCC, PI, P2, Q2, Certainty2);
 
-vola_new2 = sqrt(w_new2'*sigma_SCC*w_new2);
-r_new2 = w_new2'*mu_exp;
+vola_new2 = sqrt(w_new2'*sigma_new2*w_new2);
+r_new2 = w_new2'*PI_new2;
+
+% VIEW UNITA
+Q = [(jan_returns(2)-jan_returns(6)) / 2; 0.01];
+Certainty = [0.3 ; 0.4]; 
+P = [0, 1, 0, 0, 0, -1;
+     0, 0, 0, 0, 1, 0];
+
+[PI_new, sigma_new, w_new] = calculateView(sigma_SCC, PI, P, Q, Certainty);
+
+vola_new = sqrt(w_new'*sigma_new*w_new);
+r_new = w_new'*PI_new;
