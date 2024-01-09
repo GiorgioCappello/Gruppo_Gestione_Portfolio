@@ -59,6 +59,7 @@ prices = rmmissing(prices);
 market_prices  = rmmissing(market_prices);
 capitalization = rmmissing(capitalization);
 
+% Prendiamo i returns in percentuale
 returns = returns./100;
 
 %% PUNTO 2
@@ -71,7 +72,6 @@ k = 0.3;
 
 % Calcolo matrice varianza-covarianza
 sigma = cov(returns);
-% standard_dev
 vola = sqrt(diag(sigma));
 
 correlations = corr(returns);
